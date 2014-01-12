@@ -24,7 +24,7 @@ use RuntimeException;
  *
  * @author Benjamin Zikarsky <benjamin@zikarsky.de>
  */
-class Publisher implements IPublisherInterface
+class Publisher implements IMessagePublisher 
 {
     /**
      * @var Set
