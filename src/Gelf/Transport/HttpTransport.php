@@ -78,10 +78,10 @@ class HttpTransport implements TransportInterface
         );
 
         $guzzleConfig = [
-            'version'   => 'v1.0',
             'request.options' => [
-                'headers' =>  ['Content-Type' => 'application/json; charset=utf-8'],
-                'protocolVersion' => '1.0'
+                'headers' =>  [
+                    'Content-Type' => 'application/json; charset=utf-8'
+                ]
             ]
         ];
 
