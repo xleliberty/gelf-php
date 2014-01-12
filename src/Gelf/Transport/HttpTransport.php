@@ -20,12 +20,12 @@ use Guzzle\Http\Url;
 use RuntimeException;
 
 /**
- * UdpTransport allows the transfer of GELF-messages to an compatible GELF-UDP-backend
+ * Http Transport allows the transfer of GELF-messages to an compatible GELF-HTTP-backend
  * as described in https://github.com/Graylog2/graylog2-docs/wiki/GELF
  *
- * @author Benjamin Zikarsky <benjamin@zikarsky.de>
+ * @author xavier LEMBO <xlembo@eliberty.fr>
  */
-class HttpRestTransport implements TransportInterface
+class HttpTransport implements TransportInterface
 {
 
     const DEFAULT_HOST     = "127.0.0.1";
@@ -45,6 +45,8 @@ class HttpRestTransport implements TransportInterface
      * @var Guzzleclient
      */
     protected $restClient;
+
+    protected $targetUrl;
 
     /**
      * Class constructor
@@ -66,7 +68,7 @@ class HttpRestTransport implements TransportInterface
         $endpoint = $endpoint ?: self::DEFAULT_ENDPOINT;
         $scheme   = $scheme ?: self::DEFAULT_SCHEME;
 
-        $url = Url::buildUrl(
+        $targetUrl = Url::buildUrl(
             [
                 'scheme' => $scheme,
                 'host'   => $host,
@@ -75,7 +77,15 @@ class HttpRestTransport implements TransportInterface
             ]
         );
 
-        $this->restClient = new GuzzleClient($url);
+        $guzzleConfig = [
+            'version'   => 'v1.0',
+            'request.options' => [
+                'headers' =>  ['Content-Type' => 'application/json; charset=utf-8'],
+                'protocolVersion' => '1.0'
+            ]
+        ];
+
+        $this->restClient = new GuzzleClient($targetUrl, $guzzleConfig);
     }
 
     /**
@@ -113,9 +123,11 @@ class HttpRestTransport implements TransportInterface
     {
         $rawMessage = $this->getMessageEncoder()->encode($message);
 
-        // send message in one packet
-        $request = $this->restClient->post(null, null, $rawMessage);
-        $request->send();
+        $this
+            ->restClient
+            ->post(null, null, $rawMessage)
+            ->setProtocolVersion('1.0')
+            ->send();
 
         return 1;
     }
